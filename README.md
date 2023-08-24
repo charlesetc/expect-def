@@ -40,12 +40,17 @@ Make sure to import any modules whose tests you would like to run.
 Runing `python test.py test` will show you a diff of the expected output if the tests fails:
 
 ```diff
-/Users/charles/code/python-expect-def/src/expect_def/__init__.py passed
 /Users/charles/code/python-expect-def/example/__init__.py failed
-4a5,7
->     """
->     25
->     """
+------ /Users/charles/code/python-expect-def/example/__init__.py
+++++++ /Users/charles/code/python-expect-def/example/__init__.py.err
+@|-2,4 +2,7 ============================================================
+ |
+ |@expect.test
+ |def test_five_times_five():
++|    """
++|    25
++|    """
+ |    print(5 * 5)
 ```
 
 Which you can accept with `python test.py accept`.
