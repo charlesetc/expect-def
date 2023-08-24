@@ -27,9 +27,9 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Documentation = "https://github.com/unknown/expect-def#readme"
-Issues = "https://github.com/unknown/expect-def/issues"
-Source = "https://github.com/unknown/expect-def"
+Documentation = "https://github.com/charlesetc/expect-def#readme"
+Issues = "https://github.com/charlesetc/expect-def/issues"
+Source = "https://github.com/charlesetc/expect-def"
 
 [tool.hatch.version]
 path = "src/expect_def/__about__.py"
