@@ -52,7 +52,7 @@ Which you can accept with `python test.py accept`.
 
 ## Alternatives
 
-See also [snapshottest](https://pypi.org/project/snapshottest/) and [expecttest](https://pypi.org/project/expecttest/) and [pytest-expect](https://pypi.org/project/pytest-expect/). These don't make use of doc strings as a 
+See also [snapshottest](https://pypi.org/project/snapshottest/) and [expecttest](https://pypi.org/project/expecttest/) and [pytest-expect](https://pypi.org/project/pytest-expect/). These don't make use of doc strings as the assertion mechanism and some integrate with pytest.
 
 ## Installation
 
