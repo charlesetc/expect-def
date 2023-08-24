@@ -15,7 +15,7 @@ See Jane Street's blog post [The Joy of Expect Tests](https://blog.janestreet.co
 
 Create a test like so:
 
-```
+```python
 import expect_def as expect
 
 @expect.test
@@ -28,7 +28,7 @@ Anything you print will become an assertion
 
 To run it, create a `test.py` file in the root of your project:
 
-```
+```python
 import src.your_project_here
 import expect_def
 expect_def.run
