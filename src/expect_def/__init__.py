@@ -12,9 +12,10 @@ from collections import defaultdict
 
 EXPECTATIONS = defaultdict(list)
 
+
 @dataclass
 class Expectation:
-    f: Any # TODO: describe the function type
+    f: Any  # TODO: describe the function type
     line_number: int
 
     def __post_init__(self):
@@ -31,15 +32,13 @@ class Expectation:
                 self.f()
         self.result = output.getvalue()
 
-
         def strip_whitespace(s):
             if s is None:
                 return None
-            return "\n".join([ l.strip() for l in s.splitlines()]).strip()
-
+            return "\n".join([l.strip() for l in s.splitlines()]).strip()
 
         return strip_whitespace(self.result) == strip_whitespace(self.expected)
-    
+
     def get_indent(self):
         sourcelines = inspect.getsourcelines(self.f)[0]
         for i, line in enumerate(sourcelines):
@@ -48,17 +47,19 @@ class Expectation:
                 return firstline.removesuffix(firstline.lstrip())
 
 
-
 def caller_line_number():
     return cast(Any, inspect.stack()[2]).positions.lineno
+
 
 def test(f):
     expectation = Expectation(f, line_number=caller_line_number())
     EXPECTATIONS[expectation.file].append(expectation)
     return f
 
+
 doc_comment_regex = re.compile(r'\s"""')
 function_def_regex = re.compile(r'def \w+\(')
+
 
 def write_corrected_file(file, expectations):
     expectations_by_line = {}
@@ -71,7 +72,6 @@ def write_corrected_file(file, expectations):
 
     with open(file) as infile:
         with open(errfile, "w") as outfile:
-
             state = "reading"
             expectation = None
 
@@ -109,11 +109,13 @@ def write_corrected_file(file, expectations):
 
     return errfile
 
+
 def _run_accept():
     for file in EXPECTATIONS:
         errfile = file + ".err"
         if os.path.isfile(errfile):
             os.rename(errfile, file)
+
 
 def _run_tests():
     # TODO: supporting filtering by module
@@ -157,6 +159,7 @@ def run():
 
 expect = sys.modules[__name__]
 
+
 @expect.test
 def first_test():
     """
@@ -175,12 +178,15 @@ def first_test():
 
 def extra_decorator(a):
     from functools import wraps
+
     # so long as the decorator use `wraps` the generated expectation
     # will have the right indentation
     @wraps(a)
     def w():
         return a()
+
     return w
+
 
 @expect.test
 @extra_decorator
