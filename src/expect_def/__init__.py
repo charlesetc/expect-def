@@ -4,14 +4,15 @@ import os
 import inspect
 import contextlib
 import subprocess
-from typing import Any, Dict, List, Literal, Optional
+from typing import Dict, List, Literal, Optional
+from typing import Callable as Fn
 from dataclasses import dataclass
 from collections import defaultdict
 
 
 @dataclass
 class Expectation:
-    f: Any  # TODO: describe the function type
+    f: Fn[[], None]
     line_number: int
 
     def __post_init__(self):
