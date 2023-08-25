@@ -1,7 +1,6 @@
 import io
 import re
 import os
-import sys
 import inspect
 import contextlib
 import subprocess
@@ -58,6 +57,7 @@ def test(f):
 
 
 doc_comment_regex = re.compile(r'\s"""')
+double_doc_comment_regex = re.compile(r'\s""".*\s"""')
 function_def_regex = re.compile(r'def \w+\(')
 
 
@@ -82,7 +82,7 @@ def write_corrected_file(file, expectations):
                     expectation = expectations_by_line[i]
                     state = "look for function def"
 
-                if state == "look for function def" and function_def_regex.search(line):
+                elif state == "look for function def" and function_def_regex.search(line):
                     indent = expectation.get_indent()
                     outfile.write(line)
                     outfile.write(indent + '"""\n')
@@ -94,6 +94,10 @@ def write_corrected_file(file, expectations):
 
                     if expectation.has_doc_string:
                         state = "skip next two doc comments"
+
+                elif state == "skip next two doc comments" and double_doc_comment_regex.search(line):
+                    keep_line = False
+                    state = "reading"
 
                 elif state == "skip next two doc comments" and doc_comment_regex.search(line):
                     keep_line = False
@@ -155,43 +159,3 @@ def run():
         return _run_accept()
     else:
         raise argparse.ArgumentTypeError
-
-
-expect = sys.modules[__name__]
-
-
-@expect.test
-def first_test():
-    """
-    a
-    b
-    b
-    b
-    b
-    c
-    """
-    print("a")
-    for _ in range(4):
-        print("b")
-    print("c")
-
-
-def extra_decorator(a):
-    from functools import wraps
-
-    # so long as the decorator use `wraps` the generated expectation
-    # will have the right indentation
-    @wraps(a)
-    def w():
-        return a()
-
-    return w
-
-
-@expect.test
-@extra_decorator
-def test_with_extra_decorator():
-    """
-    hi there!
-    """
-    print("hi there!")

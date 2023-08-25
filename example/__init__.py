@@ -1,4 +1,5 @@
-import src.expect_def as expect 
+import src.expect_def as expect
+
 
 @expect.test
 def test_five_times_five():
