@@ -4,12 +4,9 @@ import os
 import inspect
 import contextlib
 import subprocess
-from typing import cast, Any
+from typing import Any, Dict, List, Literal, Optional
 from dataclasses import dataclass
 from collections import defaultdict
-
-
-EXPECTATIONS = defaultdict(list)
 
 
 @dataclass
@@ -31,7 +28,7 @@ class Expectation:
                 self.f()
         self.result = output.getvalue()
 
-        def strip_whitespace(s):
+        def strip_whitespace(s: Optional[str]):
             if s is None:
                 return None
             return "\n".join([l.strip() for l in s.splitlines()]).strip()
@@ -46,8 +43,15 @@ class Expectation:
                 return firstline.removesuffix(firstline.lstrip())
 
 
+EXPECTATIONS: defaultdict[str, List[Expectation]] = defaultdict(list)
+
+
 def caller_line_number():
-    return cast(Any, inspect.stack()[2]).positions.lineno
+    positions = inspect.stack()[2].positions
+    assert positions is not None
+    line_number = positions.lineno
+    assert line_number is not None
+    return line_number
 
 
 def test(f):
@@ -56,13 +60,21 @@ def test(f):
     return f
 
 
+ExpectationState = Literal[
+    "reading",
+    "look for function def",
+    "skip next two doc comments",
+    "skip next doc comment",
+]
+
+
 doc_comment_regex = re.compile(r'\s"""')
 double_doc_comment_regex = re.compile(r'\s""".*\s"""')
 function_def_regex = re.compile(r'def \w+\(')
 
 
-def write_corrected_file(file, expectations):
-    expectations_by_line = {}
+def write_corrected_file(file: str, expectations: List[Expectation]):
+    expectations_by_line: Dict[int, Expectation] = {}
     for expectation in expectations:
         # each expectation should have its own line in this file
         # (and line numbers are 1-indexed)
@@ -72,8 +84,8 @@ def write_corrected_file(file, expectations):
 
     with open(file) as infile:
         with open(errfile, "w") as outfile:
-            state = "reading"
-            expectation = None
+            state: ExpectationState = "reading"
+            expectation: Optional[Expectation] = None
 
             for i, line in enumerate(infile.readlines()):
                 keep_line = True
@@ -83,7 +95,9 @@ def write_corrected_file(file, expectations):
                     state = "look for function def"
 
                 elif state == "look for function def" and function_def_regex.search(line):
+                    assert expectation is not None
                     indent = expectation.get_indent()
+                    assert indent is not None
                     outfile.write(line)
                     outfile.write(indent + '"""\n')
 
