@@ -4,10 +4,11 @@ import os
 import inspect
 import contextlib
 import subprocess
-from typing import Dict, List, Literal, Optional
+from typing import Literal, Optional
 from typing import Callable as Fn
 from dataclasses import dataclass
 from collections import defaultdict
+from collections.abc import Iterable
 
 
 @dataclass
@@ -15,14 +16,14 @@ class Expectation:
     f: Fn[[], None]
     line_number: int
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.name = self.f.__name__
         self.module = self.f.__module__
         self.file = inspect.getfile(self.f)
         self.expected = self.f.__doc__
         self.has_doc_string = self.expected is not None
 
-    def run(self):
+    def run(self) -> bool:
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
             with contextlib.redirect_stderr(output):
@@ -36,7 +37,7 @@ class Expectation:
 
         return strip_whitespace(self.result) == strip_whitespace(self.expected)
 
-    def get_indent(self):
+    def get_indent(self) -> Optional[str]:
         sourcelines = inspect.getsourcelines(self.f)[0]
         for i, line in enumerate(sourcelines):
             if line.lstrip().startswith("def"):
@@ -44,10 +45,10 @@ class Expectation:
                 return firstline.removesuffix(firstline.lstrip())
 
 
-EXPECTATIONS: defaultdict[str, List[Expectation]] = defaultdict(list)
+EXPECTATIONS: defaultdict[str, list[Expectation]] = defaultdict(list)
 
 
-def caller_line_number():
+def caller_line_number() -> int:
     positions = inspect.stack()[2].positions
     assert positions is not None
     line_number = positions.lineno
@@ -55,7 +56,7 @@ def caller_line_number():
     return line_number
 
 
-def test(f):
+def test(f: Fn[[], None]) -> Fn[[], None]:
     expectation = Expectation(f, line_number=caller_line_number())
     EXPECTATIONS[expectation.file].append(expectation)
     return f
@@ -74,8 +75,8 @@ double_doc_comment_regex = re.compile(r'\s""".*\s"""')
 function_def_regex = re.compile(r'def \w+\(')
 
 
-def write_corrected_file(file: str, expectations: List[Expectation]):
-    expectations_by_line: Dict[int, Expectation] = {}
+def write_corrected_file(file: str, expectations: Iterable[Expectation]) -> str:
+    expectations_by_line: dict[int, Expectation] = {}
     for expectation in expectations:
         # each expectation should have its own line in this file
         # (and line numbers are 1-indexed)
@@ -129,14 +130,14 @@ def write_corrected_file(file: str, expectations: List[Expectation]):
     return errfile
 
 
-def _run_accept():
+def _run_accept() -> None:
     for file in EXPECTATIONS:
         errfile = file + ".err"
         if os.path.isfile(errfile):
             os.rename(errfile, file)
 
 
-def _run_tests():
+def _run_tests() -> None:
     # TODO: supporting filtering by module
 
     for file, expectations in EXPECTATIONS.items():
@@ -144,7 +145,7 @@ def _run_tests():
         if os.path.isfile(errfile):
             os.remove(errfile)
 
-        file_success = all(list(map(lambda e: e.run(), expectations)))
+        file_success = all(map(lambda e: e.run(), expectations))
 
         if file_success:
             print(f"{file} passed")
@@ -154,7 +155,7 @@ def _run_tests():
             subprocess.run(["patdiff", "-keep-whitespace", "-context", "3", file, errfile])
 
 
-def run():
+def run() -> None:
     """
     `run` runs all of the expectations matching supplied ARGV
 
