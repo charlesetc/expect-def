@@ -4,8 +4,8 @@ import os
 import inspect
 import contextlib
 import subprocess
-from typing import Literal, Optional
-from typing import Callable as Fn
+import traceback
+from typing import Literal, Optional, Callable as Fn
 from dataclasses import dataclass
 from collections import defaultdict
 from collections.abc import Iterable
@@ -25,9 +25,14 @@ class Expectation:
 
     def run(self) -> bool:
         output = io.StringIO()
+
         with contextlib.redirect_stdout(output):
             with contextlib.redirect_stderr(output):
-                self.f()
+                try:
+                    self.f()
+                except:
+                    traceback.print_exc()
+
         self.result = output.getvalue()
 
         def strip_whitespace(s: Optional[str]):

@@ -30,6 +30,20 @@ def extra_decorator(a):
 
 
 @expect.test
+def test_exception():
+    """
+    Traceback (most recent call last):
+      File "/Users/charles/code/python-expect-def/src/expect_def/__init__.py", line 32, in run
+        self.f()
+      File "/Users/charles/code/python-expect-def/test/test_expect.py", line 43, in test_exception
+        raise Exception("hi there!")
+    Exception: hi there!
+    """
+
+    raise Exception("hi there!")
+
+
+@expect.test
 @extra_decorator
 def test_with_extra_decorator():
     """
