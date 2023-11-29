@@ -22,6 +22,7 @@ class Expectation:
         self.file = inspect.getfile(self.f)
         self.expected = self.f.__doc__
         self.has_doc_string = self.expected is not None
+        self.result = ""
 
     def run(self) -> bool:
         output = io.StringIO()
@@ -33,7 +34,7 @@ class Expectation:
                 except:
                     traceback.print_exc()
 
-        self.result = output.getvalue()
+        self.result = output.getvalue() or ""
 
         def strip_whitespace(s: Optional[str]):
             if s is None:
@@ -157,6 +158,7 @@ def _run_tests() -> None:
         else:
             print(f"{file} failed")
             errfile = write_corrected_file(file, expectations)
+            print(f"diff {file} {errfile}")
             subprocess.run(["patdiff", "-keep-whitespace", "-context", "3", file, errfile])
 
 
