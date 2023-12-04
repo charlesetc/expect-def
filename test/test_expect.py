@@ -33,7 +33,7 @@ def extra_decorator(a):
 def test_exception():
     """
     Traceback (most recent call last):
-      File "/Users/charles/code/python-expect-def/src/expect_def/__init__.py", line 32, in run
+      File "/Users/charles/code/python-expect-def/src/expect_def/__init__.py", line 33, in run
         self.f()
       File "/Users/charles/code/python-expect-def/test/test_expect.py", line 43, in test_exception
         raise Exception("hi there!")

@@ -24,7 +24,9 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = []
+dependencies = [
+  "clize"
+]
 
 [project.urls]
 Documentation = "https://github.com/charlesetc/expect-def#readme"

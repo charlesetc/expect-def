@@ -136,30 +136,30 @@ def write_corrected_file(file: str, expectations: Iterable[Expectation]) -> str:
     return errfile
 
 
-def _run_accept() -> None:
+def _run_accept(filter = None) -> None:
     for file in EXPECTATIONS:
-        errfile = file + ".err"
-        if os.path.isfile(errfile):
-            os.rename(errfile, file)
+        if filter is None or filter in file:
+            errfile = file + ".err"
+            if os.path.isfile(errfile):
+                os.rename(errfile, file)
 
 
-def _run_tests() -> None:
-    # TODO: supporting filtering by module
-
+def _run_tests(filter = None) -> None:
     for file, expectations in EXPECTATIONS.items():
-        errfile = file + ".err"
-        if os.path.isfile(errfile):
-            os.remove(errfile)
+        if filter is None or filter in file:
+            errfile = file + ".err"
+            if os.path.isfile(errfile):
+                os.remove(errfile)
 
-        file_success = all(map(lambda e: e.run(), expectations))
+            file_success = all(list(map(lambda e: e.run(), expectations)))
 
-        if file_success:
-            print(f"{file} passed")
-        else:
-            print(f"{file} failed")
-            errfile = write_corrected_file(file, expectations)
-            print(f"diff {file} {errfile}")
-            subprocess.run(["patdiff", "-keep-whitespace", "-context", "3", file, errfile])
+            if file_success:
+                print(f"{file} passed")
+            else:
+                print(f"{file} failed")
+                errfile = write_corrected_file(file, expectations)
+                print(f"diff {file} {errfile}")
+                subprocess.run(["patdiff", "-keep-whitespace", "-context", "3", file, errfile])
 
 
 def run() -> None:
@@ -170,15 +170,8 @@ def run() -> None:
     whose tests you would like to be available (using @expect.test to define the tests)
     and then calls this function.
     """
-    import argparse
-
-    parser = argparse.ArgumentParser("test.py")
-    parser.add_argument("action", choices=['test', 'accept'], default='test')
-    args = parser.parse_args()
-
-    if args.action == 'test':
-        return _run_tests()
-    elif args.action == 'accept':
-        return _run_accept()
-    else:
-        raise argparse.ArgumentTypeError
+    import clize
+    clize.run({
+        "test": _run_tests,
+        "accept": _run_accept,
+    })
