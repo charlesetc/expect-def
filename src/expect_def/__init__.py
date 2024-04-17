@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from collections import defaultdict
 from collections.abc import Iterable
 
+testing_enabled = False
 
 @dataclass
 class Expectation:
@@ -63,9 +64,15 @@ def caller_line_number() -> int:
 
 
 def test(f: Fn[[], None]) -> Fn[[], None]:
-    expectation = Expectation(f, line_number=caller_line_number())
-    EXPECTATIONS[expectation.file].append(expectation)
+    global testing_enabled
+    if testing_enabled:
+        expectation = Expectation(f, line_number=caller_line_number())
+        EXPECTATIONS[expectation.file].append(expectation)
     return f
+
+def enable_testing() -> None:
+    global testing_enabled
+    testing_enabled = True
 
 
 ExpectationState = Literal[
