@@ -29,9 +29,11 @@ Anything you print will become an assertion
 To run it, create a `test.py` file in the root of your project:
 
 ```python
-import src.your_project_here
 import expect_def
-expect_def.run
+expect_def.enable_testing()
+
+import src.your_project_here
+expect_def.run()
 ```
 
 Make sure to import any modules whose tests you would like to run.
